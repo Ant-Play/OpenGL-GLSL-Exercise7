@@ -1,4 +1,5 @@
-#include <GL/glew.h>  
+#include <GL/glew.h>
+#include <GL/glut.h>
 #include <GL/freeglut.h>  
 #include <iostream>
 #include <cstdio>  
@@ -11,21 +12,24 @@ using namespace std;
 
 GLfloat l_dir[3] = { 1.0f, 1.0f, 1.0f };
 GLfloat ambient[4] = { 0.2f , 0.15f , 0.1f , 1.0f };
-GLfloat eyeposition[3] = { 0.0 , 10.0 , 30.0 };
 GLfloat diffuse[4] = { 0.8f,0.6f,0.4f,1.0f };
 GLfloat specular[4] = { 1.0f,1.0f,1.0f,1.0f };
 GLfloat Ns = 30;
-GLfloat objectSize = 15.0;
+GLfloat objectSize = 5.0;
 GLuint programHandle;
 GLuint vShader, fShader;
 
-//旋转参数
-GLfloat xrot = 0;
-GLfloat yrot = 0;
-GLfloat xold = 0;
-GLfloat yold = 0;
+// Camera Position
+float camX = 0, camY = 10, camZ = 30;
 
-bool isRotate = false;
+
+// Camera Spherical Coordinates
+float alpha = 39.0f, beta = 51.0f;
+float r = 30.0f;
+
+int rx1, ry1;
+int g_mouseX, g_mouseY;
+bool g_isTracking = false;
 
 //读入字符流  
 char* textFileRead(const char* fn)
@@ -190,19 +194,24 @@ void init()
 
 void Reshape(int w, int h)
 {
+	float ratio;
+	if (h == 0) h = 1;
 	glViewport(0, 0, (GLsizei)w, (GLsizei)h);
+	ratio = (1.0f * w) / h;
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(90, 1, 0.1, 1000.0);
+	gluPerspective(53.13f, ratio, 0.1f, 10000.0f);
 	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(eyeposition[0], eyeposition[1], eyeposition[2], 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	
 }
 
 void display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColor3f(1.0, 1.0, 1.0);
+
+	glLoadIdentity();
+	gluLookAt(camX, camY, camZ, 0, 0, 0, 0, 1, 0);
 
 	glUseProgram(programHandle);
 	glUniform3f(glGetUniformLocation(programHandle, "l_dir"), l_dir[0], l_dir[1], l_dir[2]);
@@ -211,43 +220,61 @@ void display()
 	glUniform4f(glGetUniformLocation(programHandle, "specular"), specular[0], specular[1], specular[2], specular[3]);
 	glUniform1f(glGetUniformLocation(programHandle, "shininess"), Ns);
 
-
-	//旋转
-	glRotatef(xrot, 1.0, 0.0, 0.0);
-	glRotatef(yrot, 0.0, 1.0, 0.0);
+	glRotatef(rx1, 0, 1, 0);
+	glRotatef(ry1, 1, 0, 0);
 
 	glutSolidTeapot(objectSize);
 	glutSwapBuffers();
 }
 
-void SpecialKey(GLint key, GLint x, GLint y)
+void processKeys(unsigned char key, int xx, int yy) {
+	switch (key){
+		case 'm':
+			glEnable(GL_MULTISAMPLE);
+			break;
+		case 'n':
+			glDisable(GL_MULTISAMPLE);
+			break;
+		default:
+			break;
+	}
+}
+
+
+void mouse(int button, int state, int x, int y)
 {
-	if (key == GLUT_KEY_UP)
+	if (button == GLUT_LEFT_BUTTON)
 	{
-		//do something
+		g_isTracking = true;
+		g_mouseX = x;
+		g_mouseY = y;
 	}
-	display();
-}
+	else g_isTracking = false;
 
-void mouse(int button, int state, int x, int y) {
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		isRotate = true;
-		xold = x - yrot;
-		yold = -y + xrot;
-	}
-	else {
-		isRotate = true;
-	}
 }
+void motion(int x, int y)
+{
+	if (g_isTracking)
+	{
+		rx1 -= x - g_mouseX;
+		ry1 -= y - g_mouseY;
 
-void mouse_motion(int x, int y) {
-	if (isRotate) {
-		yrot = x - xold;
-		xrot = y + yold;
+		g_mouseX = x;
+		g_mouseY = y;
 	}
 }
 
-void idle() {
+void mouseWheel(int wheel, int direction, int x, int y) {
+	r += direction * 0.1f;
+	if (r < 0.1f)
+		r = 0.1f;
+
+	camX = r * sin(alpha * 3.14f / 180.0f) * cos(beta * 3.14f / 180.0f);
+	camZ = r * cos(alpha * 3.14f / 180.0f) * cos(beta * 3.14f / 180.0f);
+	camY = r *								 sin(beta * 3.14f / 180.0f);
+}
+void idle()
+{
 	glutPostRedisplay();
 }
 
@@ -261,9 +288,9 @@ int main(int argc, char** argv)
 	init();
 	glutReshapeFunc(Reshape);
 	glutDisplayFunc(display);
-	glutSpecialFunc(SpecialKey);
 	glutMouseFunc(mouse);
-	glutMotionFunc(mouse_motion);
+	glutMotionFunc(motion);
+	glutMouseWheelFunc(mouseWheel);
 	glutIdleFunc(idle);
 
 	glutMainLoop();

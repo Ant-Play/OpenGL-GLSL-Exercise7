@@ -1,2 +1,4 @@
 ﻿  main.cpp
+D:\WorkSpace\Exercise7\Exercise7\main.cpp(223,12): warning C4244: “参数”: 从“int”转换到“GLfloat”，可能丢失数据
+D:\WorkSpace\Exercise7\Exercise7\main.cpp(224,12): warning C4244: “参数”: 从“int”转换到“GLfloat”，可能丢失数据
   Exercise7.vcxproj -> D:\WorkSpace\Exercise7\Debug\Exercise7.exe
