@@ -23,5 +23,7 @@
     <None Include="packages.config" />
     <None Include="shaders\Vert1.vert" />
     <None Include="shaders\Frag1.frag" />
+    <None Include="shaders\Vert2.vert" />
+    <None Include="shaders\Frag2.frag" />
   </ItemGroup>
 </Project>

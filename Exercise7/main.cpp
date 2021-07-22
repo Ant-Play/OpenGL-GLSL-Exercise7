@@ -11,10 +11,14 @@
 using namespace std;
 
 GLfloat l_dir[3] = { 1.0f, 1.0f, 1.0f };
-GLfloat ambient[4] = { 0.2f , 0.15f , 0.1f , 1.0f };
-GLfloat diffuse[4] = { 0.8f,0.6f,0.4f,1.0f };
-GLfloat specular[4] = { 1.0f,1.0f,1.0f,1.0f };
-GLfloat Ns = 30;
+GLfloat l_ambient[4] = { 0.2f , 0.15f , 0.1f , 1.0f };
+GLfloat l_diffuse[4] = { 0.8f,0.6f,0.4f,1.0f };
+GLfloat l_specular[4] = { 1.0f,1.0f,1.0f,1.0f };
+GLfloat l_shininess = 30;
+GLfloat m_diffuse[4] = { 1.000000, 0.829000, 0.829000, 0.922000 };
+GLfloat m_ambient[4] = { 0.250000, 0.207250, 0.207250, 0.922000 };
+GLfloat m_specular[4] = { 0.296648, 0.296648, 0.296648, 0.922000 };
+GLfloat m_shininess = 11.264000;
 GLfloat objectSize = 5.0;
 GLuint programHandle;
 GLuint vShader, fShader;
@@ -175,7 +179,6 @@ void initShader(const char* VShaderFile, const char* FShaderFile)
 		}
 	}
 }
-
 //完成glew初始化和加载顶点、片段着色器
 void init()
 {
@@ -187,7 +190,7 @@ void init()
 	}
 	glEnable(GL_DEPTH_TEST);
 	//加载顶点和片段着色器对象并链接到一个程序对象上  
-	initShader("shaders/Vert1.vert", "shaders/Frag1.frag");
+	initShader("shaders/Vert2.vert", "shaders/Frag2.frag");
 
 	glClearColor(0.0, 0.0, 0.0, 0.0);
 }
@@ -213,12 +216,25 @@ void display()
 	glLoadIdentity();
 	gluLookAt(camX, camY, camZ, 0, 0, 0, 0, 1, 0);
 
+	//	PerVertex Lighting
+	/*glUseProgram(programHandle);
+	glUniform3f(glGetUniformLocation(programHandle, "l_dir"), l_dir[0], l_dir[1], l_dir[2]);
+	glUniform4f(glGetUniformLocation(programHandle, "l_ambient"), l_ambient[0], l_ambient[1], l_ambient[2], l_ambient[3]);
+	glUniform4f(glGetUniformLocation(programHandle, "l_diffuse"), l_diffuse[0], l_diffuse[1], l_diffuse[2], l_diffuse[3]);
+	glUniform4f(glGetUniformLocation(programHandle, "l_specular"), l_specular[0], l_specular[1], l_specular[2], l_specular[3]);
+	glUniform1f(glGetUniformLocation(programHandle, "l_shininess"), l_shininess);
+	glUniform4f(glGetUniformLocation(programHandle, "m_ambient"), m_ambient[0], m_ambient[1], m_ambient[2], m_ambient[3]);
+	glUniform4f(glGetUniformLocation(programHandle, "m_ambient"), m_ambient[0], m_ambient[1], m_ambient[2], m_ambient[3]);
+	glUniform4f(glGetUniformLocation(programHandle, "m_ambient"), m_ambient[0], m_ambient[1], m_ambient[2], m_ambient[3]);
+	glUniform1f(glGetUniformLocation(programHandle, "m_shininess"), m_shininess);*/
+
+	//	PerFragment Lighting
 	glUseProgram(programHandle);
 	glUniform3f(glGetUniformLocation(programHandle, "l_dir"), l_dir[0], l_dir[1], l_dir[2]);
-	glUniform4f(glGetUniformLocation(programHandle, "ambient"), ambient[0], ambient[1], ambient[2], ambient[3]);
-	glUniform4f(glGetUniformLocation(programHandle, "diffuse"), diffuse[0], diffuse[1], diffuse[2], diffuse[3]);
-	glUniform4f(glGetUniformLocation(programHandle, "specular"), specular[0], specular[1], specular[2], specular[3]);
-	glUniform1f(glGetUniformLocation(programHandle, "shininess"), Ns);
+	glUniform4f(glGetUniformLocation(programHandle, "l_ambient"), l_ambient[0], l_ambient[1], l_ambient[2], l_ambient[3]);
+	glUniform4f(glGetUniformLocation(programHandle, "l_diffuse"), l_diffuse[0], l_diffuse[1], l_diffuse[2], l_diffuse[3]);
+	glUniform4f(glGetUniformLocation(programHandle, "l_specular"), l_specular[0], l_specular[1], l_specular[2], l_specular[3]);
+	glUniform1f(glGetUniformLocation(programHandle, "l_shininess"), l_shininess);
 
 	glRotatef(rx1, 0, 1, 0);
 	glRotatef(ry1, 1, 0, 0);
@@ -281,7 +297,7 @@ void idle()
 int main(int argc, char** argv)
 {
 	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_MULTISAMPLE);
 	glutInitWindowSize(600, 600);
 	glutInitWindowPosition(100, 100);
 	glutCreateWindow("Hello GLSL");

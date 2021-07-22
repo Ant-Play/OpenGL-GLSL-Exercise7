@@ -1,11 +1,20 @@
 uniform vec3 l_dir;//光源位置
-uniform vec4 diffuse;
-uniform vec4 ambient;
-uniform vec4 specular;
-uniform float shininess;
+uniform vec4 l_diffuse;
+uniform vec4 l_ambient;
+uniform vec4 l_specular;
+uniform float l_shininess;
+uniform vec4 m_diffuse;
+uniform vec4 m_ambient;
+uniform vec4 m_specular;
+uniform float m_shininess;
 varying vec4 color;//向片段着色其传递的参数
 
 void main(){
+
+	vec4 ambient = l_ambient;
+	vec4 diffuse = l_diffuse;
+	vec4 specular = l_specular;
+	float shininess = l_shininess;
 	// set the specular term to black
 	vec4 spec = vec4(0.0);
 
